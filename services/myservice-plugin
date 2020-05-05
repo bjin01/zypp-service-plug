@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+#
+# zypp plugin
+#
+import os
+import sys
+from zypp_plugin import Plugin
+
+class MyPlugin(Plugin):
+
+  def MYMESSAGE( self, headers, body ):
+    # called upon revieving a SAMPLE message, but which Message can I use?
+    """
+    How can I send this multilines back to zypp? like below lines to generate a repo file which will be taken by my urlresolver.
+    [sample_repo]
+    enabled=1
+    autorefresh=1
+    url = plugin:myresolver?subscription=basic
+    type = ris
+    """
+
+    if ( ok ):
+      self.ack("what message can I send back here?" )
+    else:
+      self.error( { "aheader":"header value" }, "body\n(multiline text ok)" )
+
+plugin = MyPlugin()
+plugin.main()

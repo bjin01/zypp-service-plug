@@ -1,0 +1,28 @@
+#!/usr/bin/python3
+
+#URL Resolver zypper plugin. This plugin resolves the url to the proper repository.
+
+import logging
+from systemd import journal
+from zypp_plugin import Plugin
+
+logger = logging.getLogger(__name__)
+logger.addHandler(journal.JournalHandler())
+
+class exoscale(Plugin):
+    def RESOLVEURL(self, headers, body):
+        logger.info(headers)
+        #logger.info("exoscale plugin: repo url resolve: %s" % headers.get('path'))
+        logger.info("exoscale plugin: header value: %s" % headers.get('credentials'))
+        path = headers.get('path')
+        logger.info("exoscale plugin: repo url resolve: %s" % path)
+        server = 'http://192.168.122.147' 
+        #repo_url = server + path
+
+        self.answer(
+            'RESOLVEDURL',
+            {'AUTHORIZATION': 'jinbo'}
+            #repo_url
+        )
+plugin = exoscale()
+plugin.main()
