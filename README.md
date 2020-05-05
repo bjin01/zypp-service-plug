@@ -1,0 +1,1 @@
+# zypp-service-plug
