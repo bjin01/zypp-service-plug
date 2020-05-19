@@ -1,5 +1,7 @@
+#!/usr/bin/python3
+
 from collections import abc
-import base64
+import base64, sys, subprocess
 import hashlib
 import hmac
 import json
@@ -11,6 +13,55 @@ API_KEY = "EXOc06c3bbb964cef9bdf82349d"
 API_SECRET= "Uyo8BpMmfdmYpm6Shy8cD8e2T2FhLBbsw_T2ro0Qqys"
 
 COMPUTE_ENDPOINT = "https://api.exoscale.ch/compute"
+search_list = ['id', 'displayname', 'templatename']
+instance_billing =  '{ "billing_tag": "sles"}'
+
+def parse_dict(mydict, search_list):
+    result = {}
+    if isinstance(mydict, dict):      
+        num = mydict['listvirtualmachinesresponse']['count']
+        for i in range(num):
+            h = str(i)
+            h = {}
+            for b in search_list:
+                value = mydict['listvirtualmachinesresponse']['virtualmachine'][i][b]
+                h.update({b : value})
+            result.update({ i : h })
+            
+    else:
+        sys.exit(2)
+    return result
+
+def get_uuid():
+    dmidecode = subprocess.Popen(['/usr/sbin/dmidecode'],
+                                      stdout=subprocess.PIPE,
+                                      bufsize=1,
+                                      universal_newlines=True
+                                      )
+
+    while True:
+        line = dmidecode.stdout.readline()
+        if "UUID:" in str(line):
+            uuid = str(line).split("UUID:", 1)[1].split()[0]
+            return uuid
+        if not line:
+            break
+
+def match_value(input_dict, find_key, find_val):
+    if isinstance(input_dict, dict):
+        for k, v in input_dict.items():
+            if isinstance(v, dict):
+                for x, y in v.items():
+                    if x == find_key and y == find_val:
+                        result = "found"
+                        return result
+            else:
+                if k == find_key and v == find_val:
+                    result = "found"
+                    return result
+    else:
+        print("no dict given")
+        
 
 def sign(command, secret):
   """Adds the signature bit to a command expressed as a dict"""
@@ -47,33 +98,13 @@ endurl = COMPUTE_ENDPOINT + "?" + query_string
 # As GET
 response = requests.get(endurl)
 json_response = response.json()
-print(type(json_response))
-for h, i in json_response.items():
-     print(type(h), type(i))
-     if isinstance(h, str):
-         try:
-             res = json.loads(h)
-             #print(res)
-             if isinstance(res, dict):
-                 for k, v in res.items():
-                     print(k, v)
-         except:
-             print(h)
+found = parse_dict(json_response, search_list)
 
-     if isinstance(i, dict):
-         for x, y in i.items():
-             print(type(x), type(y))
-             try:
-                 res = json.loads(x)
-                 for a, b in res.items():
-                     print(type(a), type(b))
-                     try:
-                         res = json.loads(a)
-                         if isinstance(a, dict):
-                             for k, v in a.items():
-                                 print(k, v)
-                     except:
-                          print(a)
-             except:
-                 print(x)
+my_uuid = get_uuid()
+find_key = 'id'
 
+result = match_value(found, find_key, my_uuid)
+#print(result)
+if result is 'found':
+    #print("matching uuid found: %s" % my_uuid)
+    print(instance_billing)
