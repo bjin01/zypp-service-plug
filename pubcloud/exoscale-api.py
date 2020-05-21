@@ -14,7 +14,7 @@ API_SECRET= "Uyo8BpMmfdmYpm6Shy8cD8e2T2FhLBbsw_T2ro0Qqys"
 
 COMPUTE_ENDPOINT = "https://api.exoscale.ch/compute"
 search_list = ['id', 'displayname', 'templatename']
-instance_billing =  '{ "billing_tag": "sles"}'
+instance_data =  { "billing_tag": "sles"}
 
 def parse_dict(mydict, search_list):
     result = {}
@@ -25,7 +25,8 @@ def parse_dict(mydict, search_list):
             h = {}
             for b in search_list:
                 value = mydict['listvirtualmachinesresponse']['virtualmachine'][i][b]
-                h.update({b : value})
+                h.update({ b : value })
+                #print(b, value)
             result.update({ i : h })
             
     else:
@@ -48,17 +49,18 @@ def get_uuid():
             break
 
 def match_value(input_dict, find_key, find_val):
+    isFound = ""
     if isinstance(input_dict, dict):
         for k, v in input_dict.items():
             if isinstance(v, dict):
                 for x, y in v.items():
                     if x == find_key and y == find_val:
-                        result = "found"
-                        return result
+                        isFound = "found"
+                        return isFound, v
             else:
                 if k == find_key and v == find_val:
-                    result = "found"
-                    return result
+                    isFound = "found"
+                    return isFound, input_dict
     else:
         print("no dict given")
         
@@ -103,8 +105,12 @@ found = parse_dict(json_response, search_list)
 my_uuid = get_uuid()
 find_key = 'id'
 
-result = match_value(found, find_key, my_uuid)
-#print(result)
+result, result_dict = match_value(found, find_key, my_uuid)
+#print(result, result_dict)
 if result is 'found':
+    final = ""
     #print("matching uuid found: %s" % my_uuid)
-    print(instance_billing)
+    instance_data.update( {'instance-id' : my_uuid} )
+    for k, v in result_dict.items():
+        final += k + ": " + v + ", "
+    print(final)
