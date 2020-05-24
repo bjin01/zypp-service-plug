@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from collections import abc
 import base64, sys, subprocess
 import hashlib
 import hmac
@@ -8,6 +7,7 @@ import json
 import requests
 from urllib.request import urlopen
 from urllib.parse import quote, urlencode
+
 
 API_KEY = "EXOc06c3bbb964cef9bdf82349d"
 API_SECRET= "Uyo8BpMmfdmYpm6Shy8cD8e2T2FhLBbsw_T2ro0Qqys"
@@ -44,6 +44,7 @@ def get_uuid():
         line = dmidecode.stdout.readline()
         if "UUID:" in str(line):
             uuid = str(line).split("UUID:", 1)[1].split()[0]
+            uuid = uuid.lower()
             return uuid
         if not line:
             break
